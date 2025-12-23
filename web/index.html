@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ESP32 Location Tracker</title>
+    <style>
+        #map {
+            height: 100%;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #controls-container {
+            position: absolute;
+            top: 10px;
+            right: 60px;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .control-element {
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            font-family: Arial, sans-serif;
+        }
+
+        #alarm-btn {
+            border: 2px solid #d32f2f;
+            cursor: pointer;
+            font-weight: bold;
+            color: #d32f2f;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        #alarm-btn:hover {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        #alarm-btn:active {
+            background-color: #b71c1c;
+            transform: translateY(1px);
+        }
+
+        #track-container {
+            border: 1px solid #ccc;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+    <!-- Firebase Compat SDKs (Required for file:// usage) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="controls-container">
+        <button id="alarm-btn" class="control-element">Trigger Alarm</button>
+        <div id="track-container" class="control-element">
+            <input type="checkbox" id="track-checkbox">
+            <label for="track-checkbox">Urmărește drumul</label>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqdrz5iSZvDLsfX8zHt6GmeVsNlBc6NxQ",
+            authDomain: "iot-project-65f02.firebaseapp.com",
+            databaseURL: "https://iot-project-65f02-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "iot-project-65f02",
+            storageBucket: "iot-project-65f02.firebasestorage.app",
+            messagingSenderId: "349344273184",
+            appId: "1:349344273184:web:3ce1d7dfedc4c2383abd45"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let map;
+        let marker;
+        let flightPath;
+        let pathCoordinates = [];
+
+        function initMap() {
+            const initialPos = { lat: 44.4268, lng: 26.1025 };
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: initialPos,
+            });
+
+            marker = new google.maps.Marker({
+                position: initialPos,
+                map: map,
+                title: "ESP32 Location",
+            });
+
+            flightPath = new google.maps.Polyline({
+                path: pathCoordinates,
+                geodesic: true,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1.0,
+                strokeWeight: 2,
+            });
+
+            // Listen for location updates
+            const locationRef = database.ref('location');
+            locationRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const newPos = { lat: data.lat, lng: data.lon };
+                    marker.setPosition(newPos);
+                    map.panTo(newPos);
+
+                    // Update path history
+                    pathCoordinates.push(newPos);
+                    flightPath.setPath(pathCoordinates);
+
+                    console.log("Location updated:", newPos);
+                }
+            });
+
+            // Alarm Button Logic
+            const alarmBtn = document.getElementById('alarm-btn');
+            alarmBtn.addEventListener('click', () => {
+                const alarmRef = database.ref('alarm');
+                alarmRef.set(true)
+                    .then(() => {
+                        console.log("Alarm set to TRUE");
+                        alert("Alarm Triggered! (alarm=true sent to Firebase)");
+                    })
+                    .catch((error) => {
+                        console.error("Error setting alarm: ", error);
+                        alert("Failed to trigger alarm.");
+                    });
+            });
+
+            // Track Path Logic
+            const trackCheckbox = document.getElementById('track-checkbox');
+            trackCheckbox.addEventListener('change', function () {
+                if (this.checked) {
+                    flightPath.setMap(map);
+                } else {
+                    flightPath.setMap(null);
+                }
+            });
+        }
+
+        // Expose initMap to window for the callback
+        window.initMap = initMap;
+    </script>
+
+    <!-- Google Maps API -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpacqmgtsPi6PyzKOQjCrZHwRvLFn4b6Y&callback=initMap&v=weekly"
+        async></script>
+</body>
+
+</html>

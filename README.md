@@ -145,10 +145,24 @@ Interfața este proiectată cu un design responsive și minimalist. Elementele d
 ![Web](./resources/image3.png)
 
 ## Rezultate
-TODO
+![Rezultat](./resources/image5.png)
+
+![Rezultat gif](./resources/result.gif)
+
+Implementarea finală a sistemului confirmă faptul că toate obiectivele tehnice au fost atinse, rezultând o instalație complet funcțională și stabilă. În cadrul testelor de performanță, dispozitivul a demonstrat o capacitate excelentă de a gestiona simultan procesele locale și sincronizarea cu infrastructura cloud, fără erori de execuție sau latențe sesizabile de către utilizator.
+
+Monitorizarea locației este deplin operațională, coordonatele extrase de modulul GPS fiind transmise constant către Firebase și mapate cu precizie pe interfața web. Această conexiune permite o vizualizare fluidă a deplasării în timp real, oferind un istoric clar al traseului parcurs. Totodată, sistemul de control prin gesturi răspunde prompt, permițând activarea modului „girofar” printr-o simplă mișcare a mâinii; în acest mod, LED-ul RGB alternează culorile roșu și albastru, simulând fidel avertizarea vizuală a unui vehicul de intervenție.
+
+Fiabilitatea comunicației bidirecționale a fost validată prin funcția de declanșare a alarmei de la distanță (triggering), unde comenzile transmise din panoul web sunt recepționate și executate de ESP32-C3 aproape instantaneu. Structura flexibilă a bazei de date Firebase permite nu doar monitorizarea parametrilor actuali, ci și extinderea viitoare a sistemului pentru a transmite orice alte date telemetrice necesare. În concluzie, ansamblul hardware și software funcționează exact cum s-a dorit, reprezentând o soluție IoT coerentă și robustă pentru localizare și control inteligent.
 
 ## Concluzii
-TODO
+Acest proiect a vizat dezvoltarea unui sistem inteligent de localizare și control prin gesturi, oferind o soluție intuitivă pentru monitorizarea vehiculelor și interacțiunea "touchless" cu indicatorii de stare ai acestora. Rezultatul final este un prototip funcțional, capabil să integreze date geografice precise cu o interfață de control modernă, eliminând necesitatea interacțiunii fizice cu butoane mecanice în timpul condusului.
+
+Deși proiectul a pus bazele unei platforme solide pentru monitorizarea de la distanță, este important de menționat că sistemul se află în stadiul de prototip și poate fi rafinat pentru o utilizare profesională. Precizia localizării depinde de calitatea semnalului GPS, iar în medii urbane dens populate pot apărea abateri minore. Pentru a crește rigoarea sistemului, o îmbunătățire viitoare ar putea consta în integrarea unui sistem de corecție a datelor sau utilizarea unui modul GPS cu antenă activă performantă.
+
+Din punct de vedere al extinderii funcționalităților, proiectul ar putea beneficia de integrarea unor senzori suplimentari, cum ar fi un accelerometru pentru detectarea impactului sau a stilului de condus, și afișarea unor recomandări de siguranță pe interfața web pe baza vitezei de deplasare. De asemenea, implementarea unui modul de notificare tip „push” pe dispozitivele mobile ar putea alerta utilizatorul instantaneu în momentul în care alarma este declanșată.
+
+Obiectivul principal a fost construirea unui sistem IoT complet, de la hardware la cloud, și aprofundarea provocărilor tehnice ce apar în dezvoltarea soluțiilor embedded. Din această perspectivă, proiectul și-a îndeplinit rolul, oferindu-mi oportunitatea de a progresa dincolo de conceptele studiate în laboratoare și de a gestiona integrarea complexă a protocoalelor de comunicație într-un produs coerent.
 
 ## Referințe
 

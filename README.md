@@ -171,3 +171,24 @@ Obiectivul principal a fost construirea unui sistem IoT complet, de la hardware 
 3.  **DFRobot**: [Wiki Senzor Gesturi](https://wiki.dfrobot.com/)
 4.  **TinyGPS++ Library**: [GitHub Repository](https://github.com/mikalhart/TinyGPSPlus)
 5.  **Firebase**: [Documentație Realtime Database](https://firebase.google.com/docs/database)
+
+## Actualiazare Sistem (Ianuarie 2026)
+
+Proiectul a primit un upgrade major, transformându-se dintr-un simplu tracker într-un sistem interactiv complet. Iată noile funcționalități adăugate peste arhitectura originală:
+
+### 1. WiFi Manager Gestural
+- **Eliminarea Hardcodării**: Nu mai este nevoie de SSID/Parolă în cod.
+- **Scanare & Auto-Connect**: Dispozitivul scanează rețelele. Dacă găsește "Udleniteli", se conectează automat.
+- **Tastatură Virtuală**: Dacă rețeaua e necunoscută, utilizatorul o selectează și introduce parola folosind gesturi (stânga/dreapta pentru caractere).
+
+### 2. Sistem de Operare "GestureNav"
+Un meniu interactiv navigabil prin gesturi, cu 3 ecrane:
+- **Dashboard**: Monitorizare GPS live.
+- **Mesagerie**: Trimite mesaje predefinite ("I am Safe") către dispecerat.
+- **Control**: Activează/Dezactivează Girofarul sau Modul Silentios.
+
+### 3. Smart Web Dashboard
+Interfața web (`index.html`) a fost modernizată cu **Glassmorphism** și funcții noi:
+- **Live Feed**: Vezi mesajele trimise de dispozitiv instantaneu.
+- **Alarmă Bidirecțională**: Poți declanșa alarma de pe site, iar dispozitivul va reacționa fizic (LED + LCD).
+- **Safety**: Gestul **TOUCH 5** funcționează ca un "Panic Button" care resetează totul și stinge alarma.

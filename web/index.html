@@ -2,77 +2,199 @@
 <html>
 
 <head>
-    <title>ESP32 Location Tracker</title>
+    <title>ESP32 Tracker Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        #map {
-            height: 100%;
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --primary: #2196F3;
+            --danger: #FF3B30;
+            --success: #34C759;
+            --text-dark: #1D1D1F;
         }
 
-        html,
-        body {
+        body,
+        html {
             height: 100%;
             margin: 0;
-            padding: 0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
         }
 
-        #controls-container {
+        #map {
+            height: 100%;
+            width: 100%;
             position: absolute;
-            top: 10px;
-            right: 60px;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-end;
+            z-index: 1;
         }
 
-        .control-element {
-            background-color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            font-family: Arial, sans-serif;
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            z-index: 10;
+        }
+
+        /* Info Panel (Top Left) */
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 280px;
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: var(--text-dark);
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .status-value {
+            font-weight: 600;
+        }
+
+        /* Message Feed */
+        #message-box {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        #latest-message {
+            font-size: 16px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+
+        /* Controls (Bottom Center) */
+        #controls-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        button {
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            font-size: 14px;
+        }
+
+        button:active {
+            transform: scale(0.96);
         }
 
         #alarm-btn {
-            border: 2px solid #d32f2f;
-            cursor: pointer;
-            font-weight: bold;
-            color: #d32f2f;
-            text-transform: uppercase;
-            transition: all 0.2s ease;
-        }
-
-        #alarm-btn:hover {
-            background-color: #d32f2f;
+            background-color: var(--danger);
             color: white;
+            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
         }
 
-        #alarm-btn:active {
-            background-color: #b71c1c;
-            transform: translateY(1px);
+        #clear-alarm-btn {
+            background-color: white;
+            color: var(--text-dark);
+            border: 1px solid #ddd;
         }
 
-        #track-container {
-            border: 1px solid #ccc;
-            font-size: 14px;
+        /* Alarm Overlay Animation */
+        #alarm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 0px solid var(--danger);
+            pointer-events: none;
+            z-index: 999;
+            transition: border-width 0.3s ease;
+        }
+
+        .alarm-active {
+            animation: pulse-border 1s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            from {
+                border-width: 0px;
+                opacity: 0;
+            }
+
+            to {
+                border-width: 20px;
+                opacity: 0.8;
+            }
+        }
+
+        /* Switch */
+        .switch-container {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid #eee;
         }
     </style>
-    <!-- Firebase Compat SDKs (Required for file:// usage) -->
+    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 
 <body>
+    <div id="alarm-overlay"></div>
     <div id="map"></div>
-    <div id="controls-container">
-        <button id="alarm-btn" class="control-element">Trigger Alarm</button>
-        <div id="track-container" class="control-element">
+
+    <!-- Info Panel -->
+    <div id="info-panel" class="glass-panel">
+        <h2>Live Status</h2>
+        <div class="status-item">
+            <span>Status:</span>
+            <span id="connection-status" class="status-value" style="color: var(--success)">Online</span>
+        </div>
+        <div class="status-item">
+            <span>Last Update:</span>
+            <span id="last-seen" class="status-value">--:--:--</span>
+        </div>
+
+        <div id="message-box">
+            <span style="font-size: 12px; color: #666;">LATEST MESSAGE:</span>
+            <div id="latest-message">No messages yet...</div>
+        </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div id="controls-panel" class="glass-panel">
+        <button id="alarm-btn">TRIGGER ALARM</button>
+        <button id="clear-alarm-btn">Clear Alarm</button>
+
+        <div class="switch-container">
             <input type="checkbox" id="track-checkbox">
-            <label for="track-checkbox">Urmărește drumul</label>
+            <label for="track-checkbox" style="font-size: 14px; cursor: pointer;">Show Path</label>
         </div>
     </div>
 
@@ -86,7 +208,6 @@
             messagingSenderId: "349344273184",
             appId: "1:349344273184:web:3ce1d7dfedc4c2383abd45"
         };
-
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -102,70 +223,86 @@
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 15,
                 center: initialPos,
+                disableDefaultUI: true, // Cleaner look
+                styles: [
+                    { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
+                ]
             });
 
             marker = new google.maps.Marker({
                 position: initialPos,
                 map: map,
-                title: "ESP32 Location",
+                title: "Active Device",
+                animation: google.maps.Animation.DROP
             });
 
             flightPath = new google.maps.Polyline({
                 path: pathCoordinates,
                 geodesic: true,
-                strokeColor: "#FF0000",
-                strokeOpacity: 1.0,
-                strokeWeight: 2,
+                strokeColor: "#2196F3",
+                strokeOpacity: 0.8,
+                strokeWeight: 4,
             });
 
-            // Listen for location updates
-            const locationRef = database.ref('location');
-            locationRef.on('value', (snapshot) => {
+            // 1. Listen for Location
+            database.ref('location').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     const newPos = { lat: data.lat, lng: data.lon };
                     marker.setPosition(newPos);
                     map.panTo(newPos);
 
-                    // Update path history
                     pathCoordinates.push(newPos);
                     flightPath.setPath(pathCoordinates);
 
-                    console.log("Location updated:", newPos);
+                    // Update timestamp
+                    const now = new Date();
+                    document.getElementById('last-seen').innerText = now.toLocaleTimeString();
                 }
             });
 
-            // Alarm Button Logic
-            const alarmBtn = document.getElementById('alarm-btn');
-            alarmBtn.addEventListener('click', () => {
-                const alarmRef = database.ref('alarm');
-                alarmRef.set(true)
-                    .then(() => {
-                        console.log("Alarm set to TRUE");
-                        alert("Alarm Triggered! (alarm=true sent to Firebase)");
-                    })
-                    .catch((error) => {
-                        console.error("Error setting alarm: ", error);
-                        alert("Failed to trigger alarm.");
-                    });
+            // 2. Listen for Messages
+            database.ref('message').on('value', (snapshot) => {
+                const msg = snapshot.val();
+                if (msg) {
+                    document.getElementById('latest-message').innerText = `"${msg}"`;
+                    // Visual flair for new message
+                    const msgBox = document.getElementById('message-box');
+                    msgBox.style.backgroundColor = "rgba(33, 150, 243, 0.1)";
+                    setTimeout(() => msgBox.style.backgroundColor = "transparent", 1000);
+                }
             });
 
-            // Track Path Logic
-            const trackCheckbox = document.getElementById('track-checkbox');
-            trackCheckbox.addEventListener('change', function () {
-                if (this.checked) {
-                    flightPath.setMap(map);
+            // 3. Listen for Alarm Status (Bi-directional)
+            database.ref('alarm').on('value', (snapshot) => {
+                const isAlarm = snapshot.val();
+                const overlay = document.getElementById('alarm-overlay');
+                if (isAlarm === true) {
+                    overlay.classList.add('alarm-active');
+                    document.getElementById('alarm-btn').innerText = "ALARM ACTIVE!";
                 } else {
-                    flightPath.setMap(null);
+                    overlay.classList.remove('alarm-active');
+                    document.getElementById('alarm-btn').innerText = "TRIGGER ALARM";
                 }
+            });
+
+            // Controls
+            document.getElementById('alarm-btn').addEventListener('click', () => {
+                database.ref('alarm').set(true);
+            });
+
+            document.getElementById('clear-alarm-btn').addEventListener('click', () => {
+                database.ref('alarm').set(false);
+            });
+
+            document.getElementById('track-checkbox').addEventListener('change', function () {
+                if (this.checked) flightPath.setMap(map);
+                else flightPath.setMap(null);
             });
         }
 
-        // Expose initMap to window for the callback
         window.initMap = initMap;
     </script>
-
-    <!-- Google Maps API -->
     <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpacqmgtsPi6PyzKOQjCrZHwRvLFn4b6Y&callback=initMap&v=weekly"
         async></script>
